@@ -11,6 +11,7 @@ import {
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useState } from "react";
 import { setProduct } from "../../store/reducers/productReducer";
+import { getProductById } from "../utils";
 
 const ProductCarousel = ({
   product,
@@ -39,7 +40,12 @@ const ProductCarousel = ({
         : prevIndex - productsPerPage
     );
   };
-  console.log(product, "product");
+
+  const getProduct = async (id: number) => {
+    const product = await getProductById(id);
+    dispatch(setProduct(product));
+  };
+
   return (
     <div className="mb-4">
       <div className="flex items-center justify-center mt-4 gap-4">
@@ -58,23 +64,29 @@ const ProductCarousel = ({
             .slice(startIndex, startIndex + productsPerPage)
             .map((prod) => (
               <div
-                key={prod.id}
+                key={prod.product_id}
                 className="flex flex-col w-[150px] h-[200px] items-center justify-between cursor-pointer shadow-lg bg-white rounded-[8px] overflow-visible" // Make sure overflow is visible
                 onClick={() => {
                   // navigate(`/product/${prod.id}?category=${prod.category}`);
-                  dispatch(setProduct(prod));
+                  getProduct(prod.product_id);
                 }}
               >
                 {/* Image */}
-                <div className="w-full flex items-center justify-center p-2 bg-white">
+                <div className="w-full flex items-center justify-center p-4 bg-white">
                   <img
-                    src={imageUrlArray(prod)[0]}
+                    src={
+                      imageUrlArray(prod)[0]?.link ||
+                      imageUrlArray(prod)[0] || // fallback if it's a string
+                      "https://via.placeholder.com/120"
+                    }
                     alt={
                       prod?.title
                         ? prod.title
-                        : displayData(prod?.name["en-US"]) || "Product"
+                        : prod?.product_name
+                        ? prod.product_name
+                        : displayData(prod?.name?.["en-US"]) || "Product"
                     }
-                    className="w-16 h-16 rounded-[3px] transition-transform duration-300 hover:scale-125 object-cover"
+                    className="w-20 h-20 rounded-[3px] transition-transform duration-300 hover:scale-125 object-cover"
                   />
                 </div>
 
@@ -95,8 +107,12 @@ const ProductCarousel = ({
                     <div className="w-full line-clamp-1 overflow-hidden text-ellipsis">
                       {prod?.title
                         ? prod.title
-                        : stringReducer(displayData(prod?.name["en-US"]), 60) ||
-                          "Product"}
+                        : prod?.product_name
+                        ? prod.product_name
+                        : stringReducer(
+                            displayData(prod?.name?.["en-US"]),
+                            60
+                          ) || "Product"}
                     </div>
 
                     {/* Tooltip */}
@@ -112,8 +128,12 @@ const ProductCarousel = ({
                     >
                       {prod?.title
                         ? prod.title
-                        : stringReducer(displayData(prod?.name["en-US"]), 60) ||
-                          "Product"}
+                        : prod?.product_name
+                        ? prod.product_name
+                        : stringReducer(
+                            displayData(prod?.name?.["en-US"]),
+                            60
+                          ) || "Product"}
                     </div>
                   </div>
                 </div>

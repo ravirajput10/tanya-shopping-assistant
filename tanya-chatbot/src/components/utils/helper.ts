@@ -10,13 +10,39 @@ export const displayData = (data: { [key: string]: string } | string) => {
   return String(data["en-US"] || data);
 };
 
-export const imageUrlArray = (data: Product | SearchProduct | any) => {
-  if (data?.image) {
-    return [data.image];
-  } else if ("variants" in data) {
-    return data.variants[0].images;
+export const imageUrlArray = (data: any) => {
+  // 1. Salesforce Commerce Cloud search hit: image.link
+  if (data?.image?.link) {
+    return [data.image.link];
   }
-  return data.masterVariant.images.map((image: any) => image.url);
+  // 2. Salesforce Commerce Cloud product detail: image_groups
+  if (Array.isArray(data?.image_groups) && data.image_groups.length > 0) {
+    // Prefer "large" images if available
+    const largeGroup = data.image_groups.find((g: any) => g.view_type === "large");
+    const group = largeGroup || data.image_groups[0];
+    if (group?.images?.length) {
+      return group.images.map((img: any) => img.link);
+    }
+  }
+  // 3. Single image string
+  if (typeof data?.image === "string") {
+    return [data.image];
+  }
+  // 4. Variants with images (array of URLs or objects)
+  if (Array.isArray(data?.variants) && data.variants.length > 0) {
+    const variantImages = data.variants[0].images;
+    if (Array.isArray(variantImages)) {
+      if (typeof variantImages[0] === "object" && variantImages[0]?.url) {
+        return variantImages.map((img: any) => img.url);
+      }
+      return variantImages;
+    }
+  }
+  // 5. commercetools: masterVariant.images
+  if (data?.masterVariant?.images?.length) {
+    return data.masterVariant.images.map((image: any) => image.url);
+  }
+  return [];
 };
 
 export const currencyFormatter = (data: number, currencyCode?: string) => {

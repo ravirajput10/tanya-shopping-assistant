@@ -212,7 +212,7 @@ const TanyaShoppingAssistantStream = () => {
       for (const keyword of splitedKeywords) {
         const results = await getSearchResults(
           keyword,
-          storeDetails.searchConfigs
+          // storeDetails.searchConfigs
         );
         if (results.length > 0) {
           setChatHistory((prev) =>
@@ -235,9 +235,9 @@ const TanyaShoppingAssistantStream = () => {
       for (const keyword of keywords) {
         const results = await getSearchResults(
           keyword,
-          storeDetails.searchConfigs
+          // storeDetails.searchConfigs
         );
-        if (results.length > 0) {
+        if (results?.length > 0) {
           setChatHistory((prev) =>
             prev.map((msg, idx) =>
               idx === prev.length - 1

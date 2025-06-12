@@ -33,7 +33,7 @@ const getSearchProduct = async (req, res, next) => {
   const { search } = req.query;
 
   // Create an Axios instance
-  const client = axios.create();
+  const client = axios.create({ timeout: 20000 });
 
   // AWS Signed Interceptor
   const interceptor = aws4Interceptor({

@@ -1,26 +1,20 @@
 import axios from "axios";
 import { getAccessToken } from "./getAccessToken";
-import { type SearchConfig } from "../graphQL/queries/types";
 
-export const getSearchResults = async (
-  query: string,
-  searchConfigs: SearchConfig,
-) => {
+export const getSearchResults = async (query: string) => {
   const token = await getAccessToken();
   if (!token) throw new Error("Failed to fetch token");
   try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_SERVER_BASE_URL}api/search?query=${query}`,
-      {
-        searchConfigs,
-      },
+    const response = await axios.get(
+      `${import.meta.env.VITE_SERVER_BASE_URL}api/search-sfcc?query=${query}`,
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
-      },
+      }
     );
+
     return response.data.hits;
   } catch (error) {
     console.error("Error fetching search results:", error);
@@ -28,29 +22,18 @@ export const getSearchResults = async (
   }
 };
 
+export const getProductById = async (id: number) => {
+  if (!id) throw new Error("Product ID is required");
 
-export const getSearchResultsNew = async (
-  query: string,
-  searchConfigs: SearchConfig,
-) => {
-  const token = await getAccessToken();
-  if (!token) throw new Error("Failed to fetch token");
-  try {
-    const response = await axios.post(
-      `${import.meta.env.VITE_SERVER_BASE_URL}api/search?query=${query}`,
-      {
-        searchConfigs,
+  const response = await axios.get(
+    `${import.meta.env.VITE_SERVER_BASE_URL}api/product-sfcc/${id}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: `Bearer ${token}`,
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-    return response.data.hits;
-  } catch (error) {
-    console.error("Error fetching search results:", error);
-    throw error;
-  }
+    }
+  );
+
+  return response.data;
 };
