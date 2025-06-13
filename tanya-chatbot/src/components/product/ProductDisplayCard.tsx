@@ -1,14 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Icon } from "@iconify/react";
 import { setProduct } from "../../store/reducers/productReducer";
-import { useDispatch } from "react-redux";
+import { addProductToBasket, createBasket } from "../api/api";
+import { fetchTokenSFCC } from "../utils/fetchTokenSFCC";
+import {
+  getStoredBasketId,
+  getStoredToken,
+  setStoredBasketId,
+  setStoredToken,
+} from "../utils/localStorage";
 
 const ProductDisplayCard = () => {
+  const dispatch = useDispatch();
   const product = useSelector((state: any) => state.product.product);
   const storeDetails = useSelector((s: any) => s.store.store);
-  const dispatch = useDispatch();
 
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
@@ -44,6 +51,83 @@ const ProductDisplayCard = () => {
   if (!product) return null;
 
   const { sizeAttr, colorAttr, widthAttr } = attributes;
+
+  // console.log("product variants", product.variants?.[0].product_id)
+
+  const addToCart = async () => {
+    try {
+      // const token = await fetchTokenSFCC();
+      // console.log("Received token:", token);
+
+      // if (!token) {
+      //   console.error("Failed to get token");
+      //   return;
+      // }
+
+      // Check if product and variants exist
+      if (!product?.variants?.[0]?.product_id) {
+        console.error("No product variant found");
+        return;
+      }
+
+      const productData = [
+        {
+          product_id: product.variants?.[0].product_id,
+          quantity: 1,
+        },
+      ];
+
+      let token = getStoredToken();
+
+      // If no token, get a new one
+      if (!token) {
+        // Get token once and use it for both calls (createBasket, addProductToBasket)
+        token = await fetchTokenSFCC();
+        if (!token) {
+          console.error("Failed to get token");
+          return;
+        }
+        setStoredToken(token);
+      }
+
+      let basketId = getStoredBasketId();
+      if (!basketId) {
+        // Create new basket if none exists
+        const basketResponse = await createBasket(token);
+
+        if (!basketResponse?.basket_id) {
+          console.error("Failed to create basket");
+          return;
+        }
+
+        // Store the new basket ID
+        basketId = basketResponse.basket_id;
+        setStoredBasketId(basketId);
+      }
+
+      // Add product to existing or new basket
+      const response = await addProductToBasket(basketId, productData, token);
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+
+      if (
+        error?.response?.status === 404 || // Basket not found
+        error?.response?.status === 401 // Unauthorized/expired
+      ) {
+        // Clear only basket ID for 404
+        if (error?.response?.status === 404) {
+          setStoredBasketId(null);
+        }
+        // Clear both for 401
+        if (error?.response?.status === 401) {
+          setStoredBasketId(null);
+          setStoredToken(null);
+        }
+      } else {
+        console.error("Failed to add product to basket:", error.message);
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2 items-center h-[100vh] shadow-xl p-2 border-l-2 bg-white border-gray-200 w-1/2 overflow-y-scroll">
@@ -241,12 +325,13 @@ const ProductDisplayCard = () => {
         className="flex flex-col items-center justify-between font-nunitoSans font-semibold w-5/6 text-black gap-2"
         style={{ marginTop: "150px" }}
       >
-        <div
+        <button
           className="rounded-[5px] shadow-sm text-[#FBFBFC] bg-[#6851C6] p-2 w-full text-center cursor-pointer"
           style={{ backgroundColor: storeDetails.tanyaThemeColor }}
+          onClick={addToCart}
         >
           Add to Cart
-        </div>
+        </button>
         <div
           className="rounded-[5px] shadow-sm text-[#FBFBFC] bg-[#6851C6] p-2 w-full text-center cursor-pointer mb-16"
           style={{ backgroundColor: storeDetails.tanyaThemeColor }}
