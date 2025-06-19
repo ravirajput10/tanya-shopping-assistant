@@ -11,6 +11,8 @@ import {
   setStoredBasketId,
   setStoredToken,
 } from "../utils/localStorage";
+import { toast } from "react-toastify";
+import { TOKEN_EXPIRY_KEY } from "../../config/constant";
 
 const ProductDisplayCard = () => {
   const dispatch = useDispatch();
@@ -52,18 +54,8 @@ const ProductDisplayCard = () => {
 
   const { sizeAttr, colorAttr, widthAttr } = attributes;
 
-  // console.log("product variants", product.variants?.[0].product_id)
-
   const addToCart = async () => {
     try {
-      // const token = await fetchTokenSFCC();
-      // console.log("Received token:", token);
-
-      // if (!token) {
-      //   console.error("Failed to get token");
-      //   return;
-      // }
-
       // Check if product and variants exist
       if (!product?.variants?.[0]?.product_id) {
         console.error("No product variant found");
@@ -78,37 +70,83 @@ const ProductDisplayCard = () => {
       ];
 
       let token = getStoredToken();
+      const tokenExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+      const currentTime = Date.now();
 
       // If no token, get a new one
-      if (!token) {
+      if (!token || !tokenExpiry || currentTime >= parseInt(tokenExpiry)) {
         // Get token once and use it for both calls (createBasket, addProductToBasket)
         token = await fetchTokenSFCC();
         if (!token) {
           console.error("Failed to get token");
           return;
         }
+        // Store new token with expiry time (4 minutes from now)
+        const newExpiryTime = currentTime + 4 * 60 * 1000; // 4 minutes in milliseconds
         setStoredToken(token);
-      }
+        localStorage.setItem(TOKEN_EXPIRY_KEY, newExpiryTime.toString());
 
-      let basketId = getStoredBasketId();
-      if (!basketId) {
-        // Create new basket if none exists
+        // Create new basket with new token
         const basketResponse = await createBasket(token);
-
         if (!basketResponse?.basket_id) {
           console.error("Failed to create basket");
           return;
         }
 
-        // Store the new basket ID
-        basketId = basketResponse.basket_id;
-        setStoredBasketId(basketId);
-      }
+        // Store new basket ID
+        setStoredBasketId(basketResponse.basket_id);
 
-      // Add product to existing or new basket
-      const response = await addProductToBasket(basketId, productData, token);
+        // Add product to new basket
+        const response = await addProductToBasket(
+          basketResponse.basket_id,
+          productData,
+          token
+        );
+
+        if (response?.product_items?.length > 0) {
+          const addedProduct = response.product_items.at(-1);
+          // const addedProduct = response.product_items[response.product_items.length - 1];
+          addedProduct.product_name;
+          addedProduct.product_id;
+          toast.success(`Added to cart`, {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      } else {
+        // Use existing token and basket ID
+        const basketId = getStoredBasketId();
+        if (!basketId) {
+          console.error("No basket ID found");
+          return;
+        }
+
+        const response = await addProductToBasket(basketId, productData, token);
+        if (response?.product_items?.length > 0) {
+          const addedProduct = response.product_items.at(-1);
+          // const addedProduct = response.product_items[response.product_items.length - 1];
+          addedProduct.product_name;
+          addedProduct.product_id;
+          toast.success(`Added to cart`, {
+            position: "bottom-right",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+        }
+      }
     } catch (error: any) {
       console.error("Error adding to cart:", error);
+      toast.error("Failed to add product to cart", {
+        position: "bottom-right",
+        autoClose: 3000,
+      });
 
       if (
         error?.response?.status === 404 || // Basket not found
@@ -125,6 +163,10 @@ const ProductDisplayCard = () => {
         }
       } else {
         console.error("Failed to add product to basket:", error.message);
+        toast.error("Failed to add product to cart", {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
       }
     }
   };

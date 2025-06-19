@@ -1,5 +1,9 @@
-const BASKET_ID_KEY = "sfcc_basket_id";
-const TOKEN_KEY = "sfcc_token";
+import {
+  BASKET_ID_KEY,
+  EXPIRY_TIME,
+  TOKEN_EXPIRY_KEY,
+  TOKEN_KEY,
+} from "../../config/constant";
 
 export const getStoredBasketId = (): string | null => {
   try {
@@ -43,6 +47,8 @@ export const setStoredToken = (token: string | null): void => {
   try {
     if (token) {
       localStorage.setItem(TOKEN_KEY, token);
+      const expiryTime = Date.now() + EXPIRY_TIME;
+      localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString());
     } else {
       localStorage.removeItem(TOKEN_KEY);
     }

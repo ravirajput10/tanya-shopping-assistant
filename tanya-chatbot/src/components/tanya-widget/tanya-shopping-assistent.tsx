@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 // import tanyaChatBotIcon from "@/assets/tanya-chatbot/chat-with-tanya.png";
-import { getAccessToken } from "../utils/getAccessToken";
+// import { getAccessToken } from "../utils/getAccessToken";
 import { getSearchResults } from "../utils";
 import type { SearchProduct } from "../graphQL/queries/types";
 import {
@@ -19,6 +19,7 @@ import useSessionTracker from "../hooks/useSessionTracker";
 import { fetchStoreConfig } from "../api/api";
 import { setStore } from "../../store/reducers/storeReducer";
 import ProductDisplayCard from "../product/ProductDisplayCard";
+import { apiConfig } from "../../config/api";
 const TanyaShoppingAssistantStream = () => {
   // Shopping options
   const shoppingOptions = [
@@ -115,21 +116,21 @@ const TanyaShoppingAssistantStream = () => {
 
     try {
       const sanitizedWhom = whom;
-      const token = await getAccessToken();
-      if (!token) throw new Error("Failed to fetch token");
+      // if (!token) throw new Error("Failed to fetch token");
       const user = localStorage.getItem("customerNumber");
       const isLoggedIn = localStorage.getItem("isLoggedIn");
-      const URL = `${
-        import.meta.env.VITE_SERVER_BASE_URL
-      }api/web-bff/assistantStream?application=tanya&userId=${
+      const { aiConversationUrl, xAPIKey } = apiConfig();
+      const token = xAPIKey;
+      const URL = `${aiConversationUrl}?application=tanya&userId=${
         user || new Date().getTime()
       }&registered=${isLoggedIn || true}`;
+
       const response = await fetch(`${URL}`, {
         signal: AbortSignal.timeout(30000),
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "x-api-key": token,
         },
         body: JSON.stringify({
           flowId: storeDetails.flowId,
@@ -143,48 +144,95 @@ const TanyaShoppingAssistantStream = () => {
         }),
       });
 
-      if (!response.body) throw new Error("Readable stream not supported");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let keywords = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data:")) {
-            // Extract the JSON data from the "data" field
-            const jsonData = line.slice(5).trim();
-            try {
-              const parsedData = JSON.parse(jsonData);
-              if (parsedData.index == 1) keywords = parsedData.data;
-
-              setChatHistory((prev) =>
-                prev.map((msg, idx) =>
-                  idx === prev.length - 1
-                    ? {
-                        ...msg,
-                        [parsedData.index == 0
-                          ? "response"
-                          : parsedData.index == 1
-                          ? "keywords"
-                          : "potentialQuestions"]: parsedData.data,
-                      }
-                    : msg
-                )
-              );
-            } catch (error) {
-              console.error("Error parsing JSON:", error);
-            }
-          }
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      getKeywords(sanitizeKeywords(keywords));
+
+      const data = await response.json();
+
+      // Process the response data
+      // Assuming the response structure contains the data you need
+      if (data.outputEvents) {
+        setChatHistory((prev) =>
+          prev.map((msg, idx) =>
+            idx === prev.length - 1
+              ? {
+                  ...msg,
+                  response: data.outputEvents["Event 1"]?.content,
+                  keywords: data.outputEvents["Event 2"]?.content || "",
+                  potentialQuestions:
+                    data?.outputEvents["Event 3"]?.content || "",
+                }
+              : msg
+          )
+        );
+      }
+
+      // Handle keywords if they exist in the response
+      if (data?.outputEvents["Event 2"]?.content) {
+        getKeywords(sanitizeKeywords(data.outputEvents["Event 2"].content));
+      }
+
+      // const response = await fetch(`${URL}`, {
+      //   signal: AbortSignal.timeout(30000),
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     "x-api-key": token,
+      //   },
+      //   body: JSON.stringify({
+      //     flowId: storeDetails.flowId,
+      //     flowAliasId: storeDetails.aliasId,
+      //     input: {
+      //       userPrompt: newQuery,
+      //       whom: sanitizedWhom,
+      //       storeCode: storeCode,
+      //       sessionMetadata: sessionData,
+      //     },
+      //   }),
+      // });
+
+      // if (!response.body) throw new Error("Readable stream not supported");
+
+      // const reader = response.body.getReader();
+      // const decoder = new TextDecoder();
+      // let buffer = "";
+      // let keywords = "";
+      // while (true) {
+      //   const { done, value } = await reader.read();
+      //   if (done) break;
+      //   buffer += decoder.decode(value, { stream: true });
+      //   const lines = buffer.split("\n");
+      //   buffer = lines.pop() || "";
+
+      //   for (const line of lines) {
+      //     if (line.startsWith("data:")) {
+      //       const jsonData = line.slice(5).trim();
+      //       try {
+      //         const parsedData = JSON.parse(jsonData);
+      //         if (parsedData.index == 1) keywords = parsedData.data;
+
+      //         setChatHistory((prev) =>
+      //           prev.map((msg, idx) =>
+      //             idx === prev.length - 1
+      //               ? {
+      //                   ...msg,
+      //                   [parsedData.index == 0
+      //                     ? "response"
+      //                     : parsedData.index == 1
+      //                     ? "keywords"
+      //                     : "potentialQuestions"]: parsedData.data,
+      //                 }
+      //               : msg
+      //           )
+      //         );
+      //       } catch (error) {
+      //         console.error("Error parsing JSON:", error);
+      //       }
+      //     }
+      //   }
+      // }
+      // getKeywords(sanitizeKeywords(keywords));
     } catch (error) {
       console.error("Error sending message to Tanya:", error);
     } finally {
@@ -211,7 +259,7 @@ const TanyaShoppingAssistantStream = () => {
       const splitedKeywords = keywords.split(",");
       for (const keyword of splitedKeywords) {
         const results = await getSearchResults(
-          keyword,
+          keyword
           // storeDetails.searchConfigs
         );
         if (results.length > 0) {
@@ -234,7 +282,7 @@ const TanyaShoppingAssistantStream = () => {
       console.log("in two string");
       for (const keyword of keywords) {
         const results = await getSearchResults(
-          keyword,
+          keyword
           // storeDetails.searchConfigs
         );
         if (results?.length > 0) {
@@ -555,3 +603,5 @@ const TanyaShoppingAssistantStream = () => {
 };
 
 export default TanyaShoppingAssistantStream;
+
+// ${import.meta.env.VITE_SERVER_BASE_URL}api/web-bff/assistantStream

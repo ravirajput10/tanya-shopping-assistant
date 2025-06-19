@@ -41,7 +41,7 @@ const ProductCarousel = ({
     );
   };
 
-  const getProduct = async (id: number) => {
+  const getProduct = async (id: number | string) => {
     const product = await getProductById(id);
     dispatch(setProduct(product));
   };
@@ -68,7 +68,7 @@ const ProductCarousel = ({
                 className="flex flex-col w-[150px] h-[200px] items-center justify-between cursor-pointer shadow-lg bg-white rounded-[8px] overflow-visible" // Make sure overflow is visible
                 onClick={() => {
                   // navigate(`/product/${prod.id}?category=${prod.category}`);
-                  getProduct(prod.product_id);
+                  getProduct(prod.product_id || "");
                 }}
               >
                 {/* Image */}
@@ -79,13 +79,7 @@ const ProductCarousel = ({
                       imageUrlArray(prod)[0] || // fallback if it's a string
                       "https://via.placeholder.com/120"
                     }
-                    alt={
-                      prod?.title
-                        ? prod.title
-                        : prod?.product_name
-                        ? prod.product_name
-                        : displayData(prod?.name?.["en-US"]) || "Product"
-                    }
+                    alt={prod?.title ? prod.title : "Product"}
                     className="w-20 h-20 rounded-[3px] transition-transform duration-300 hover:scale-125 object-cover"
                   />
                 </div>

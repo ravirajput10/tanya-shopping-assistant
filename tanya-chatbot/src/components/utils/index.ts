@@ -22,7 +22,7 @@ export const getSearchResults = async (query: string) => {
   }
 };
 
-export const getProductById = async (id: number) => {
+export const getProductById = async (id: number | string) => {
   if (!id) throw new Error("Product ID is required");
 
   const response = await axios.get(
