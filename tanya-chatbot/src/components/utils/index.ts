@@ -1,12 +1,14 @@
 import axios from "axios";
 import { getAccessToken } from "./getAccessToken";
+import { apiConfig } from "../../config/api";
 
 export const getSearchResults = async (query: string) => {
   const token = await getAccessToken();
+  const { serverUrl } = apiConfig();
   if (!token) throw new Error("Failed to fetch token");
   try {
     const response = await axios.get(
-      `${import.meta.env.VITE_SERVER_BASE_URL}api/search-sfcc?query=${query}`,
+      `${serverUrl}api/search-sfcc?query=${query}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -24,16 +26,14 @@ export const getSearchResults = async (query: string) => {
 
 export const getProductById = async (id: number | string) => {
   if (!id) throw new Error("Product ID is required");
+  const { serverUrl } = apiConfig();
 
-  const response = await axios.get(
-    `${import.meta.env.VITE_SERVER_BASE_URL}api/product-sfcc/${id}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        // Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await axios.get(`${serverUrl}api/product-sfcc/${id}`, {
+    headers: {
+      "Content-Type": "application/json",
+      // Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
