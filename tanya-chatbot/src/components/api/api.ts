@@ -1,11 +1,13 @@
+import { apiConfig } from "../../config/api";
 import { getAccessToken } from "../utils/getAccessToken";
 import axios from "axios";
 
 export const fetchStoreConfig = async (storeCode: string) => {
   try {
     const token = await getAccessToken();
+    const { serverUrl } = apiConfig();
     const response = await axios.get(
-      `${import.meta.env.VITE_SERVER_BASE_URL}api/logo?storeCode=${storeCode}`,
+      `${serverUrl}api/logo?storeCode=${storeCode}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -27,7 +29,8 @@ interface Product {
 }
 
 export const createBasket = async (token: string) => {
-  const URL = `${import.meta.env.VITE_SERVER_BASE_URL}`;
+  const { serverUrl } = apiConfig();
+  const URL = `${serverUrl}`;
   try {
     const response = await axios.post(
       `${URL}api/basket/create`,
@@ -59,7 +62,8 @@ export const addProductToBasket = async (
   products: Product[],
   token: string
 ) => {
-  const URL = `${import.meta.env.VITE_SERVER_BASE_URL}`;
+  const { serverUrl } = apiConfig();
+  const URL = `${serverUrl}`;
   try {
     const response = await axios.post(
       `${URL}api/basket/add-product/${basketId}`,

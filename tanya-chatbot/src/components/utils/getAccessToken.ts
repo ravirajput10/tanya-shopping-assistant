@@ -1,7 +1,9 @@
 import axios from "axios";
+import { apiConfig } from "../../config/api";
 
 export const getAccessToken = async () => {
-  const URL = `${import.meta.env.VITE_SERVER_BASE_URL}`;
+  const { serverUrl } = apiConfig();
+  const URL = `${serverUrl}`;
   try {
     const response = await axios.get(`${URL}api/auth/token`);
     if (response.status === 200 && response.data.access_token) {

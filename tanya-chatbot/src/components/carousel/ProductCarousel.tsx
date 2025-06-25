@@ -47,25 +47,25 @@ const ProductCarousel = ({
   };
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-center mt-4 gap-4">
+    <div className="mb-4 overflow-x-hidden">
+      <div className="flex items-center justify-center mt-4 gap-4 relative">
         {product?.length > productsPerPage && (
           <button
             onClick={prevProducts}
-            className="text-white p-2 rounded flex items-center h-fit"
+            className="absolute left-0 z-10 text-white p-2 rounded flex items-center h-fit"
             style={{ color: storeDetails.tanyaThemeColor }}
           >
             <Icon icon="mdi:chevron-left" width="25" />
           </button>
         )}
 
-        <div className="flex gap-4 justify-center flex-1">
+        <div className="flex gap-4 justify-center flex-1 overflow-hidden px-8">
           {product
             .slice(startIndex, startIndex + productsPerPage)
             .map((prod) => (
               <div
                 key={prod.product_id}
-                className="flex flex-col w-[150px] h-[200px] items-center justify-between cursor-pointer shadow-lg bg-white rounded-[8px] overflow-visible" // Make sure overflow is visible
+                className="flex-shrink-0 flex flex-col w-[150px] h-[200px] items-center justify-between cursor-pointer shadow-lg bg-white rounded-[8px]"
                 onClick={() => {
                   // navigate(`/product/${prod.id}?category=${prod.category}`);
                   getProduct(prod.product_id || "");
@@ -138,7 +138,7 @@ const ProductCarousel = ({
         {product?.length > productsPerPage && (
           <button
             onClick={nextProducts}
-            className="text-white p-2 rounded flex items-center h-fit"
+            className="absolute right-0 z-10 text-white p-2 rounded flex items-center h-fit"
             style={{ color: storeDetails.tanyaThemeColor }}
           >
             <Icon icon="mdi:chevron-right" width="25" />
