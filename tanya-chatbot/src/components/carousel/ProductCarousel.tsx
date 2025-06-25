@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import type { SearchProduct } from "../graphQL/queries/types";
 import {
   stringReducer,
@@ -9,9 +9,27 @@ import {
   imageUrlArray,
 } from "../utils/helper";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { setProduct } from "../../store/reducers/productReducer";
 import { getProductById } from "../utils";
+
+function useResponsiveProductsPerPage() {
+  const getProductsPerPage = () => {
+    if (window.innerWidth < 425) return 1; // Below Mobile-L
+    if (window.innerWidth < 768) return 2; // Mobile-L to md
+    return 4; // md and above
+  };
+
+  const [productsPerPage, setProductsPerPage] = useState(getProductsPerPage);
+
+  useEffect(() => {
+    const handleResize = () => setProductsPerPage(getProductsPerPage());
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return productsPerPage;
+}
 
 const ProductCarousel = ({
   product,
@@ -21,9 +39,9 @@ const ProductCarousel = ({
   storeDetails: any;
 }) => {
   const dispatch = useDispatch();
-  const selectedProduct = useSelector((state: any) => state.product.product);
+  // const selectedProduct = useSelector((state: any) => state.product.product);
+  const productsPerPage = useResponsiveProductsPerPage();
   const [startIndex, setStartIndex] = useState(0);
-  const productsPerPage = selectedProduct ? 2 : 4;
 
   const nextProducts = () => {
     setStartIndex((prevIndex) =>

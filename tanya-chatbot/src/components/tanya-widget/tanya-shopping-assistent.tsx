@@ -19,7 +19,7 @@ import useSessionTracker from "../hooks/useSessionTracker";
 import { fetchStoreConfig } from "../api/api";
 import { setStore } from "../../store/reducers/storeReducer";
 import ProductDisplayCard from "../product/ProductDisplayCard";
-import { apiConfig } from "../../config/api";
+import { apiConfig, createSignedHeaders } from "../../config/api";
 const TanyaShoppingAssistantStream = () => {
   // Shopping options
   const shoppingOptions = [
@@ -134,123 +134,100 @@ const TanyaShoppingAssistantStream = () => {
 
     try {
       const sanitizedWhom = whom;
-      // if (!token) throw new Error("Failed to fetch token");
       const user = localStorage.getItem("customerNumber");
       const isLoggedIn = localStorage.getItem("isLoggedIn");
-      const { aiConversationUrl, xAPIKey } = apiConfig();
-      const token = xAPIKey;
-      const URL = `${aiConversationUrl}?application=tanya&userId=${
-        user || new Date().getTime()
-      }&registered=${isLoggedIn || true}`;
+      const { aiConversationUrl } = apiConfig();
+      const queryParams = new URLSearchParams({
+        registered: String(isLoggedIn || true),
+        userId: String(user || new Date().getTime()),
+        // application: "tanya",
+      });
 
-      const response = await fetch(`${URL}`, {
+      const URL = `${aiConversationUrl}?${queryParams.toString()}`;
+
+      const payload = JSON.stringify({
+        flowId: storeDetails.flowId,
+        flowAliasId: storeDetails.aliasId,
+        input: {
+          userPrompt: newQuery,
+          whom: sanitizedWhom,
+          storeCode: storeCode,
+          sessionMetadata: sessionData,
+        },
+      });
+
+      // AWS credentials
+      const accessKeyId = "AKIAVVUIS3W7V7ZQR6KT";
+      const secretAccessKey = "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";
+      const region = "us-east-1";
+      const service = "execute-api";
+
+      // Note: createSignedHeaders is now async
+      const headers = await createSignedHeaders(
+        URL,
+        "POST",
+        payload,
+        accessKeyId,
+        secretAccessKey,
+        region,
+        service
+      );
+
+      const response = await fetch(URL, {
         signal: AbortSignal.timeout(30000),
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": token,
-        },
-        body: JSON.stringify({
-          flowId: storeDetails.flowId,
-          flowAliasId: storeDetails.aliasId,
-          input: {
-            userPrompt: newQuery,
-            whom: sanitizedWhom,
-            storeCode: storeCode,
-            sessionMetadata: sessionData,
-          },
-        }),
+        headers: headers,
+        body: payload,
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      if (!response.body) throw new Error("Readable stream not supported");
 
-      // Process the response data
-      // Assuming the response structure contains the data you need
-      if (data.outputEvents) {
-        setChatHistory((prev) =>
-          prev.map((msg, idx) =>
-            idx === prev.length - 1
-              ? {
-                  ...msg,
-                  response: data.outputEvents["Event 1"]?.content,
-                  keywords: data.outputEvents["Event 2"]?.content || "",
-                  potentialQuestions:
-                    data?.outputEvents["Event 3"]?.content || "",
-                }
-              : msg
-          )
-        );
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let keywords = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data:")) {
+            const jsonData = line.slice(5).trim();
+            try {
+              const parsedData = JSON.parse(jsonData);
+              if (parsedData.index == 1) keywords = parsedData.data;
+
+              setChatHistory((prev) =>
+                prev.map((msg, idx) =>
+                  idx === prev.length - 1
+                    ? {
+                        ...msg,
+                        [parsedData.index == 0
+                          ? "response"
+                          : parsedData.index == 1
+                          ? "keywords"
+                          : "potentialQuestions"]: parsedData.data,
+                      }
+                    : msg
+                )
+              );
+            } catch (error) {
+              console.error("Error parsing JSON:", error);
+            }
+          }
+        }
       }
 
-      // Handle keywords if they exist in the response
-      if (data?.outputEvents["Event 2"]?.content) {
-        getKeywords(sanitizeKeywords(data.outputEvents["Event 2"].content));
-      }
-
-      // const response = await fetch(`${URL}`, {
-      //   signal: AbortSignal.timeout(30000),
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     "x-api-key": token,
-      //   },
-      //   body: JSON.stringify({
-      //     flowId: storeDetails.flowId,
-      //     flowAliasId: storeDetails.aliasId,
-      //     input: {
-      //       userPrompt: newQuery,
-      //       whom: sanitizedWhom,
-      //       storeCode: storeCode,
-      //       sessionMetadata: sessionData,
-      //     },
-      //   }),
-      // });
-
-      // if (!response.body) throw new Error("Readable stream not supported");
-
-      // const reader = response.body.getReader();
-      // const decoder = new TextDecoder();
-      // let buffer = "";
-      // let keywords = "";
-      // while (true) {
-      //   const { done, value } = await reader.read();
-      //   if (done) break;
-      //   buffer += decoder.decode(value, { stream: true });
-      //   const lines = buffer.split("\n");
-      //   buffer = lines.pop() || "";
-
-      //   for (const line of lines) {
-      //     if (line.startsWith("data:")) {
-      //       const jsonData = line.slice(5).trim();
-      //       try {
-      //         const parsedData = JSON.parse(jsonData);
-      //         if (parsedData.index == 1) keywords = parsedData.data;
-
-      //         setChatHistory((prev) =>
-      //           prev.map((msg, idx) =>
-      //             idx === prev.length - 1
-      //               ? {
-      //                   ...msg,
-      //                   [parsedData.index == 0
-      //                     ? "response"
-      //                     : parsedData.index == 1
-      //                     ? "keywords"
-      //                     : "potentialQuestions"]: parsedData.data,
-      //                 }
-      //               : msg
-      //           )
-      //         );
-      //       } catch (error) {
-      //         console.error("Error parsing JSON:", error);
-      //       }
-      //     }
-      //   }
-      // }
-      // getKeywords(sanitizeKeywords(keywords));
+      getKeywords(sanitizeKeywords(keywords));
     } catch (error) {
       console.error("Error sending message to Tanya:", error);
     } finally {
@@ -328,9 +305,11 @@ const TanyaShoppingAssistantStream = () => {
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger
           onClick={() => setIsOpen(true)}
-          style={{
-            background: storeDetails.tanyaThemeColor,
-          }}
+          style={
+            {
+              // background: storeDetails.tanyaThemeColor,
+            }
+          }
           className="flex items-center rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
         >
           {/* <img
@@ -338,20 +317,59 @@ const TanyaShoppingAssistantStream = () => {
               alt="Chat with Tanya"
               className="w-[20%] pl-[5px] pt-[2px]"
             /> */}
-          <Icon
+          {/* <Icon
             icon="fluent:search-sparkle-28-filled"
             width="28"
             height="28"
             color={storeDetails?.tanyaThemeContrastColor}
             className="ml-3"
-          />
+          /> */}
+
           <div className="flex flex-col p-[5px]">
-            <span className="text-white text-[14px]">
+            {/* <span className="text-white text-[14px]">
               {storeDetails?.tanyaName ? storeDetails.tanyaName : "TANYA"}
             </span>
             <span className="text-white text-[12px] hidden sm:inline">
               Your AI Shopping Assistant
-            </span>
+            </span> */}
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_958_585)">
+                <path
+                  d="M30.0002 5C31.7683 5 33.464 5.70238 34.7142 6.95262C35.9644 8.20286 36.6668 9.89856 36.6668 11.6667V25C36.6668 26.7681 35.9644 28.4638 34.7142 29.714C33.464 30.9643 31.7683 31.6667 30.0002 31.6667H25.6902L21.1785 36.1783C20.8915 36.4653 20.5097 36.6377 20.1046 36.6631C19.6996 36.6886 19.2992 36.5654 18.9785 36.3167L18.8218 36.1783L14.3085 31.6667H10.0002C8.28976 31.6667 6.64478 31.0093 5.40548 29.8305C4.16617 28.6516 3.42735 27.0416 3.34183 25.3333L3.3335 25V11.6667C3.3335 9.89856 4.03588 8.20286 5.28612 6.95262C6.53636 5.70238 8.23205 5 10.0002 5H30.0002Z"
+                  fill="url(#paint0_linear_958_585)"
+                />
+                <path
+                  d="M28.3335 15.6511V11.6667C28.3335 11.6667 22.2774 12.6042 20.1148 15.4167C17.9521 18.2292 18.6644 26.6667 18.6644 26.6667H22.5321C22.5321 26.6667 22.0614 18.9323 23.4989 17.2917C24.9364 15.6511 28.3335 15.6511 28.3335 15.6511Z"
+                  fill="white"
+                />
+                <path
+                  d="M13.3335 11.6667H19.6184V15.4167H13.3335V11.6667Z"
+                  fill="white"
+                />
+              </g>
+              <defs>
+                <linearGradient
+                  id="paint0_linear_958_585"
+                  x1="20.0002"
+                  y1="5"
+                  x2="35.0002"
+                  y2="30"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#452697" />
+                  <stop offset="1" stop-color="#7C5BFF" />
+                </linearGradient>
+                <clipPath id="clip0_958_585">
+                  <rect width="40" height="40" fill="white" />
+                </clipPath>
+              </defs>
+            </svg>
           </div>
         </PopoverTrigger>
 
