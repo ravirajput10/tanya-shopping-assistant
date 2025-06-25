@@ -358,15 +358,22 @@ const TanyaShoppingAssistantStream = () => {
         {/* Absolute Positioned PopoverContent and Custom Sidebar Panel */}
         {isVisible && (
           <>
-            {/* Overlay */}
+            {/* Overlay For closing tanya popup by clicking on side or background */}
             <div
               className="fixed inset-0 z-40 bg-black/30"
               onClick={() => setIsOpen(false)}
             />
             <div
-              className={`fixed top-0 right-0 z-50 h-screen w-[125vw] sm:w-[80vw] md:w-[770px] border-0 bg-white rounded-l-xl overflow-hidden flex flex-col shadow-xl transform transition-transform duration-300 ease-in-out ${
-                isAnimating ? "translate-x-0" : "translate-x-full"
-              }`}
+              className={`
+                fixed z-50 h-screen w-[100vw] sm:w-[80vw] md:w-[770px] border-0 bg-white lg:rounded-l-xl overflow-hidden flex flex-col shadow-xl
+                top-0 right-0
+                transition-transform duration-300 ease-in-out
+                lg:transform
+                ${isAnimating ? "lg:translate-x-0" : "lg:translate-x-full"}
+                // For mobile: animate from bottom
+                ${isAnimating ? "translate-y-0" : "translate-y-full"}
+                lg:translate-y-0
+              `}
             >
               {/* // <PopoverContent
               // side="right"
@@ -377,12 +384,8 @@ const TanyaShoppingAssistantStream = () => {
             // > */}
               {/* Header */}
               <div
+                className={`flex justify-between p-1 lg:rounded-tl-xl lg:rounded-bl-xl`}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  borderTopLeftRadius: "0.75rem",
-                  borderBottomLeftRadius: "0.75rem",
-                  padding: "0.25rem",
                   background: storeDetails?.tanyaThemeColor,
                 }}
               >
@@ -430,7 +433,7 @@ const TanyaShoppingAssistantStream = () => {
                 </div>
               </div>
               {/* Chat Container */}
-              <div className={`flex h-full flex-col lg:flex-row`}>
+              <div className={`flex h-full md:flex-row lg:flex-row`}>
                 <div
                   className={`flex flex-col h-full ${
                     product ? "lg:w-2/3 w-full" : "w-full"
