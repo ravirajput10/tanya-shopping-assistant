@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react"; // Add useMemo here when uncomment the color, size, width code
+// import { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Icon } from "@iconify/react";
 import { setProduct } from "../../store/reducers/productReducer";
@@ -14,45 +15,54 @@ import {
 import { toast } from "react-toastify";
 import { TOKEN_EXPIRY_KEY } from "../../config/constant";
 
+const ANIMATION_DURATION = 300; // ms
+
 const ProductDisplayCard = () => {
   const dispatch = useDispatch();
   const product = useSelector((state: any) => state.product.product);
   const storeDetails = useSelector((s: any) => s.store.store);
 
-  const [selectedSize, setSelectedSize] = useState<string>("");
-  const [selectedColor, setSelectedColor] = useState<string>("");
-  const [selectedWidth, setSelectedWidth] = useState<string>("");
+  // const [selectedSize, setSelectedSize] = useState<string>("");
+  // const [selectedColor, setSelectedColor] = useState<string>("");
+  // const [selectedWidth, setSelectedWidth] = useState<string>("");
+
+  // Animation state
+  const [show, setShow] = useState(!!product);
 
   // Memoize attributes to prevent recalculation on every render
-  const attributes = useMemo(() => {
-    if (!product?.variation_attributes)
-      return { sizeAttr: null, colorAttr: null, widthAttr: null };
+  // const attributes = useMemo(() => {
+  //   if (!product?.variation_attributes)
+  //     return { sizeAttr: null, colorAttr: null, widthAttr: null };
 
-    return {
-      sizeAttr: product.variation_attributes.find((a: any) => a.id === "size"),
-      colorAttr: product.variation_attributes.find(
-        (a: any) => a.id === "color"
-      ),
-      widthAttr: product.variation_attributes.find(
-        (a: any) => a.id === "width"
-      ),
-    };
-  }, [product?.variation_attributes]);
+  //   return {
+  //     sizeAttr: product.variation_attributes.find((a: any) => a.id === "size"),
+  //     colorAttr: product.variation_attributes.find(
+  //       (a: any) => a.id === "color"
+  //     ),
+  //     widthAttr: product.variation_attributes.find(
+  //       (a: any) => a.id === "width"
+  //     ),
+  //   };
+  // }, [product?.variation_attributes]);
 
   // Update selected values when product or attributes change
+  // useEffect(() => {
+  //   if (!product?.variation_attributes) return;
+
+  //   const { sizeAttr, colorAttr, widthAttr } = attributes;
+
+  //   setSelectedSize(sizeAttr?.values?.[0]?.value || "");
+  //   setSelectedColor(colorAttr?.values?.[0]?.value || "");
+  //   setSelectedWidth(widthAttr?.values?.[0]?.value || "");
+  // }, [product, attributes]);
+
   useEffect(() => {
-    if (!product?.variation_attributes) return;
-
-    const { sizeAttr, colorAttr, widthAttr } = attributes;
-
-    setSelectedSize(sizeAttr?.values?.[0]?.value || "");
-    setSelectedColor(colorAttr?.values?.[0]?.value || "");
-    setSelectedWidth(widthAttr?.values?.[0]?.value || "");
-  }, [product, attributes]);
+    setShow(!!product);
+  }, [product]);
 
   if (!product) return null;
 
-  const { sizeAttr, colorAttr, widthAttr } = attributes;
+  // const { sizeAttr, colorAttr, widthAttr } = attributes;
 
   const addToCart = async () => {
     try {
@@ -175,8 +185,25 @@ const ProductDisplayCard = () => {
     <>
       <div
         className="fixed inset-0 z-40 bg-black/30"
+        onClick={() => {
+          setShow(false);
+          setTimeout(() => dispatch(setProduct(null)), ANIMATION_DURATION);
+        }}
       />
-      <div className="flex flex-col gap-2 items-center h-[90vh] absolute right-0 bottom-0 z-50 w-full md:w-1/2 md:h-[100vh] lg:w-1/2 lg:h-[100vh] shadow-xl p-2 border-l-2 bg-white border-gray-200 overflow-y-scroll">
+      <div
+        className={`
+          flex flex-col gap-2 items-center h-[90vh] absolute right-0 bottom-0 z-50 w-full md:w-1/2 md:h-[100vh] lg:w-1/2 lg:h-[100vh] shadow-xl p-2 border-l-2 bg-white border-gray-200 overflow-y-scroll
+          transition-all duration-300
+          ${
+            show
+              ? "translate-y-0 md:translate-y-0 md:translate-x-0 opacity-100"
+              : "translate-y-full md:translate-y-0 md:translate-x-full opacity-0 pointer-events-none"
+          }
+        `}
+        style={{ willChange: "transform, opacity" }}
+        // Prevent click inside card from closing
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* name and close button  */}
         <div className="mt-3 flex flex-row justify-between w-full ">
           <div>
@@ -187,8 +214,14 @@ const ProductDisplayCard = () => {
           <div>
             <Icon
               icon="mdi:close"
-              className="text-[#555555] w-6 h-6"
-              onClick={() => dispatch(setProduct(null))}
+              className="text-[#555555] w-6 h-6 cursor-pointer"
+              onClick={() => {
+                setShow(false);
+                setTimeout(
+                  () => dispatch(setProduct(null)),
+                  ANIMATION_DURATION
+                );
+              }}
             />
           </div>
         </div>
@@ -242,7 +275,7 @@ const ProductDisplayCard = () => {
         {/* horizontal line */}
         <div className="mt-2 w-full border-t-2 border-gray-200"></div>
         {/* Size */}
-        {sizeAttr ? (
+        {/* {sizeAttr ? (
           <div className="mt-3 flex flex-col justify-between w-full text-gray-500">
             <div className="text-[#323135] font-semibold font-nunitoSans">
               Select Size
@@ -267,10 +300,10 @@ const ProductDisplayCard = () => {
               ))}
             </div>
           </div>
-        ) : null}
+        ) : null} */}
 
         {/* Color */}
-        {colorAttr ? (
+        {/* {colorAttr ? (
           <div className="mt-3 flex flex-col justify-between w-full text-gray-500">
             <div className="text-[#323135] font-[600] font-nunitoSans">
               Select Color
@@ -293,10 +326,10 @@ const ProductDisplayCard = () => {
               ))}
             </div>
           </div>
-        ) : null}
+        ) : null} */}
 
         {/* Width */}
-        {widthAttr ? (
+        {/* {widthAttr ? (
           <div className="mt-3 flex flex-col justify-between w-full text-gray-500">
             <div className="text-[#323135] font-semibold font-nunitoSans">
               Select Width
@@ -321,7 +354,7 @@ const ProductDisplayCard = () => {
               ))}
             </div>
           </div>
-        ) : null}
+        ) : null} */}
         {/* Description */}
         <div className="w-full text-left">
           <div className="text-[#323135] font-bold font-nunitoSans mt-3 text-[14px]">
