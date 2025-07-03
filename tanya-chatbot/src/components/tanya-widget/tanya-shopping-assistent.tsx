@@ -12,10 +12,9 @@ import {
   // priceFormatter,
 } from "../utils/helper";
 import { useSearchParams } from "react-router-dom";
-import { Icon } from "@iconify/react/dist/iconify.js";
 import ProductDisplay from "../carousel/ProductDisplay";
 import { useDispatch, useSelector } from "react-redux";
-import useSessionTracker from "../hooks/useSessionTracker";
+// import useSessionTracker from "../hooks/useSessionTracker";
 import { fetchStoreConfig } from "../api/api";
 import { setStore } from "../../store/reducers/storeReducer";
 import ProductDisplayCard from "../product/ProductDisplayCard";
@@ -40,19 +39,19 @@ const TanyaShoppingAssistantStream = () => {
     Others: "others",
   };
 
-  const messageMapping: Record<string, string> = {
-    Myself: "Great choice! Let’s find something special just for you.",
-    "My Child": "Aww, shopping for your little one? Let’s find the best picks!",
-    "My Grandchild":
-      "How sweet! Let’s find something your grandchild will love.",
-    "Niece/Nephew":
-      "Shopping for your niece or nephew? Let’s pick something fun!",
-    "My Friends":
-      "Finding the perfect gift for your friends? Let’s get started!",
-    Others: "Shopping for someone special? Let’s make it amazing!",
-  };
+  // const messageMapping: Record<string, string> = {
+  //   Myself: "Great choice! Let’s find something special just for you.",
+  //   "My Child": "Aww, shopping for your little one? Let’s find the best picks!",
+  //   "My Grandchild":
+  //     "How sweet! Let’s find something your grandchild will love.",
+  //   "Niece/Nephew":
+  //     "Shopping for your niece or nephew? Let’s pick something fun!",
+  //   "My Friends":
+  //     "Finding the perfect gift for your friends? Let’s get started!",
+  //   Others: "Shopping for someone special? Let’s make it amazing!",
+  // };
 
-  const sessionData = useSessionTracker();
+  // const sessionData = useSessionTracker();
   const [searchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(
     searchParams.get("shoppingassist") === "true"
@@ -146,13 +145,13 @@ const TanyaShoppingAssistantStream = () => {
       const URL = `${aiConversationUrl}?${queryParams.toString()}`;
 
       const payload = JSON.stringify({
-        flowId: storeDetails.flowId,
-        flowAliasId: storeDetails.aliasId,
+        flowId: "4JR5UET44M",
+        flowAliasId: "C39MEK0ADI",
         input: {
           userPrompt: newQuery,
           whom: sanitizedWhom,
-          storeCode: storeCode,
-          sessionMetadata: sessionData,
+          // storeCode: storeCode,
+          // sessionMetadata: sessionData,
         },
       });
 
@@ -383,7 +382,7 @@ const TanyaShoppingAssistantStream = () => {
             />
             <div
               className={`
-                fixed z-50 h-screen w-[100vw] sm:w-[80vw] md:w-[770px] border-0 bg-white lg:rounded-l-xl overflow-hidden flex flex-col shadow-xl
+                fixed z-50 h-screen w-[100vw] sm:w-[80vw] md:w-[770px] border-0 bg-white lg:rounded-l-xl overflow-hidden flex flex-col shadow-[0px_4px_10px_0px_#5F499840]
                 top-0 right-0
                 transition-transform duration-300 ease-in-out
                 lg:transform
@@ -392,6 +391,10 @@ const TanyaShoppingAssistantStream = () => {
                 ${isAnimating ? "translate-y-0" : "translate-y-full"}
                 lg:translate-y-0
               `}
+              style={{
+                background:
+                  "linear-gradient(170.1deg, #FFFFFF 60.03%, #E3DEEF 99.59%)",
+              }}
             >
               {/* // <PopoverContent
               // side="right"
@@ -400,12 +403,13 @@ const TanyaShoppingAssistantStream = () => {
             //   alignOffset={0}
             //   className="relative h-screen w-[125vw] sm:w-[80vw] md:w-[770px] border-0 bg-white p-0 rounded-xl overflow-hidden flex flex-col"
             // > */}
+
               {/* Header */}
               <div
-                className={`flex justify-between p-1 lg:rounded-tl-xl lg:rounded-bl-xl`}
-                style={{
-                  background: storeDetails?.tanyaThemeColor,
-                }}
+                className={`flex justify-between p-3 bg-[#FFFFFF] border border-b-1 border-[#E5E5E5] `} //lg:rounded-tl-xl lg:rounded-bl-xl
+                // style={{
+                //   background: storeDetails?.tanyaThemeColor,
+                // }}
               >
                 <div
                   style={{
@@ -416,13 +420,48 @@ const TanyaShoppingAssistantStream = () => {
                   }}
                 >
                   {/* <img src={tanyaChatBotIcon} alt="Chat with Tanya" width={50} /> */}
-                  <Icon
+                  {/* <Icon
                     icon="fluent:search-sparkle-28-filled"
                     width="38"
                     height="38"
                     color="white"
-                  />
-                  <div>
+                  /> */}
+                  <div className="flex flex-col gap-1">
+                    <div
+                      className="flex gap-2 w-28 h-12 text-center items-center p-2 border rounded-l-[20px] rounded-tr-[20px]"
+                      style={{
+                        background:
+                          "linear-gradient(265.62deg, #6851C6 5.24%, #8668FF 98.49%)",
+                      }}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 15 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M15 4.48438V0.5C15 0.5 8.94395 1.4375 6.78127 4.25C4.61859 7.0625 5.33095 15.5 5.33095 15.5H9.19857C9.19857 15.5 8.72793 7.76562 10.1654 6.125C11.6029 4.48438 15 4.48438 15 4.48438Z"
+                          fill="white"
+                        />
+                        <path d="M0 0.5H6.28488V4.25H0V0.5Z" fill="white" />
+                      </svg>
+
+                      <p className="text-[#FFFFFF] font-nunitoSans font-semibold">
+                        TANYA
+                      </p>
+                    </div>
+                    <p
+                      className="text-[#5B5B5B] font-nunitoSans font-semibold italic"
+                      style={{ fontStyle: "italic" }}
+                    >
+                      {" "}
+                      Your AI shopping assistant !{" "}
+                    </p>
+                  </div>
+
+                  {/* <div>
                     <p className="text-xs font-light mt-1">Chat with</p>
                     <p className="font-bold m-0">
                       TANYA{" "}
@@ -430,7 +469,7 @@ const TanyaShoppingAssistantStream = () => {
                         (AI Shopping Assistant)
                       </span>
                     </p>
-                  </div>
+                  </div> */}
                 </div>
                 <div
                   style={{
@@ -440,16 +479,91 @@ const TanyaShoppingAssistantStream = () => {
                     margin: "0.75rem",
                   }}
                 >
-                  <Icon
+                  {/* reset svg icon */}
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 25"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-[#555555]"
+                  >
+                    <g clip-path="url(#clip0_501_6032)">
+                      <path
+                        d="M12 8.5V12.5L14 14.5"
+                        stroke="#555555"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M3.0498 11.5C3.2739 9.30006 4.30007 7.25962 5.93254 5.76797C7.56501 4.27633 9.6895 3.43789 11.9007 3.41264C14.1119 3.38738 16.255 4.17707 17.9211 5.63104C19.5872 7.08501 20.6597 9.10149 20.934 11.2957C21.2083 13.49 20.6651 15.7084 19.4082 17.5278C18.1512 19.3471 16.2684 20.64 14.1191 21.1599C11.9697 21.6797 9.70421 21.39 7.7548 20.3461C5.80539 19.3022 4.30853 17.5771 3.5498 15.5M3.0498 20.5V15.5H8.0498"
+                        stroke="#555555"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </g>
+                    <defs>
+                      <clipPath id="clip0_501_6032">
+                        <rect
+                          width="24"
+                          height="24"
+                          fill="white"
+                          transform="translate(0 0.5)"
+                        />
+                      </clipPath>
+                    </defs>
+                  </svg>
+
+                  {/* close icon */}
+                  <button onClick={() => setIsOpen(false)}>
+                    <svg
+                      width="24"
+                      height="25"
+                      viewBox="0 0 24 25"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g clip-path="url(#clip0_501_6036)">
+                        <path
+                          d="M18 6.5L6 18.5"
+                          stroke="#555555"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M6 6.5L18 18.5"
+                          stroke="#555555"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </g>
+                      <defs>
+                        <clipPath id="clip0_501_6036">
+                          <rect
+                            width="24"
+                            height="24"
+                            fill="white"
+                            transform="translate(0 0.5)"
+                          />
+                        </clipPath>
+                      </defs>
+                    </svg>
+                  </button>
+                  {/* <Icon
                     icon="fluent:dismiss-24-filled"
                     color={storeDetails?.tanyaThemeContrastColor}
                     width="24"
                     height="24"
-                    className="cursor-pointer"
+                    className="cursor-pointer bg-[#555555]"
                     onClick={() => setIsOpen(false)}
-                  />
+                  /> */}
                 </div>
               </div>
+
               {/* Chat Container */}
               <div className={`flex h-full md:flex-row lg:flex-row`}>
                 <div
@@ -462,7 +576,7 @@ const TanyaShoppingAssistantStream = () => {
                     ref={scrollRef}
                     className="overflow-y-auto pr-5 pb-2 space-y-4 hide-scrollbar flex-grow"
                   >
-                    <div
+                    {/* <div
                       className="text-sm text-[16px] rounded-r-xl p-3 m-3 rounded-bl-xl w-3/4"
                       style={{
                         backgroundColor: storeDetails.tanyaThemeColorLight,
@@ -472,27 +586,27 @@ const TanyaShoppingAssistantStream = () => {
                       me as your helpful friend who knows all the best stuff at{" "}
                       {storeDetails.websiteTitle}. Ready to find something
                       amazing?
-                    </div>
+                    </div> */}
 
                     {/* Shopping Options */}
                     {storeDetails?.whomRequired && (
                       <div
-                        className="mx-3 p-3 rounded-2xl"
-                        style={{
-                          color: storeDetails?.tanyaThemeContrastColor,
-                          backgroundColor: storeDetails.tanyaThemeColor,
-                          width: "fit-content",
-                        }}
+                        className="mx-3 p-3 rounded-2xl bg-[#FFFFFF]"
+                        // style={{
+                        //   color: storeDetails?.tanyaThemeContrastColor,
+                        //   backgroundColor: storeDetails.tanyaThemeColor, //need to comment
+                        //   width: "fit-content",
+                        // }}
                       >
-                        <div className="flex gap-2">
-                          <Icon
+                        <div className="flex gap-2 bg-[#FFFFFF]">
+                          {/* <Icon
                             icon="mdi:shopping"
                             color="white"
                             width="22"
                             height="22"
-                          />
-                          <p className="font-semibold text-white">
-                            Who are you shopping for?
+                          /> */}
+                          <p className="font-bold font-nunitoSans text-[#494949]">
+                            Is this for you or someone else?
                           </p>
                         </div>
 
@@ -501,18 +615,32 @@ const TanyaShoppingAssistantStream = () => {
                             <button
                               key={option}
                               onClick={() => handleWhomSelection(option)}
-                              className="px-4 py-2 text-sm border-2 rounded-xl"
+                              className="px-2 py-2 font-semibold text-xs text-[#18181B] bg-[#F3F3F3] rounded-2xl"
                               style={{
                                 backgroundColor:
                                   whom === payloadMapping[option]
-                                    ? storeDetails?.tanyaThemeColorLight
-                                    : "transparent",
-                                borderColor: storeDetails?.tanyaThemeColorLight,
-                                color:
+                                    ? "#FFFFFF"
+                                    : "#F3F3F3",
+                                borderColor:
                                   whom === payloadMapping[option]
-                                    ? storeDetails?.tanyaThemeColor || "#ffffff"
-                                    : storeDetails?.tanyaThemeContrastColor ||
-                                      "#000000",
+                                    ? "#BBB3DD"
+                                    : "",
+                                // color:
+                                //   whom === payloadMapping[option]
+                                //     ? storeDetails?.tanyaThemeColor || "#ffffff"
+                                //     : storeDetails?.tanyaThemeContrastColor ||
+                                //       "#000000",
+
+                                // backgroundColor:
+                                //   whom === payloadMapping[option]
+                                //     ? storeDetails?.tanyaThemeColorLight
+                                //     : "transparent",
+                                // borderColor: storeDetails?.tanyaThemeColorLight,
+                                // color:
+                                //   whom === payloadMapping[option]
+                                //     ? storeDetails?.tanyaThemeColor || "#ffffff"
+                                //     : storeDetails?.tanyaThemeContrastColor ||
+                                //       "#000000",
                               }}
                             >
                               {option}
@@ -522,7 +650,7 @@ const TanyaShoppingAssistantStream = () => {
                       </div>
                     )}
 
-                    {storeDetails?.whomRequired && whom && (
+                    {/* {storeDetails?.whomRequired && whom && (
                       <div className="flex items-center mx-3 mt-1">
                         <Icon
                           icon="fluent:shopping-bag-24-filled"
@@ -544,34 +672,34 @@ const TanyaShoppingAssistantStream = () => {
                           })()}
                         </p>
                       </div>
-                    )}
+                    )} */}
 
                     {/* Chat History */}
                     {chatHistory.map((chat, index) => (
                       <div key={index}>
                         <div className="flex justify-end">
                           <p
-                            className="text-sm rounded-l-xl p-3 m-3 mb-4 rounded-br-xl max-w-[75%]"
-                            style={{
-                              color: storeDetails?.tanyaThemeContrastColor,
-                              backgroundColor: storeDetails.tanyaThemeColor,
-                            }}
+                            className="text-sm font-nunitoSans font-bold text-[#000000] bg-[#E2DBFF] border border-[#C9C2DE] rounded-l-xl p-2 m-3 mb-4 rounded-br-xl max-w-[75%]"
+                            // style={{
+                            //   color: storeDetails?.tanyaThemeContrastColor,
+                            //   backgroundColor: storeDetails.tanyaThemeColor,
+                            // }}
                           >
                             {chat.query}
                           </p>
                         </div>
                         {chat.response && (
-                          <div className="mt-4">
+                          <div>
                             <div
-                              className="text-sm text-[#232323] bg-[#FFFFFF] px-7 py-4 rounded-r-xl rounded-bl-2xl w-full"
+                              className="font-nunitoSans font-bold text-sm text-[#494949] bg-[#FFFFFF] px-7 py-1 rounded-r-xl rounded-bl-2xl w-full"
                               dangerouslySetInnerHTML={{
                                 __html: formatStringToHtml(chat.response),
                               }}
-                              style={{
-                                backgroundColor:
-                                  storeDetails.tanyaThemeColorLight,
-                                margin: "0.75rem",
-                              }}
+                              // style={{
+                              //   backgroundColor:
+                              //     storeDetails.tanyaThemeColorLight,
+                              //   margin: "0.75rem",
+                              // }}
                             />
                           </div>
                         )}
@@ -584,9 +712,9 @@ const TanyaShoppingAssistantStream = () => {
 
                         {/* Potential Questions */}
                         {chat.potentialQuestions.length > 0 && (
-                          <div className="my-2 mb-8 px-4 text-sm text-gray-700">
+                          <div className="my-2 mb-20 px-4 text-sm text-gray-700">
                             <p
-                              className="font-semibold"
+                              className="font-nunitoSans font-bold text-sm text-[#494949]"
                               style={{ color: storeDetails.themeDarkColor }}
                             >
                               Why not explore these inquiries...
@@ -596,7 +724,7 @@ const TanyaShoppingAssistantStream = () => {
                               .map((question, idx) => (
                                 <button
                                   key={idx}
-                                  className={`cursor-pointer text-[#232323] border bg-[#804C9E0D] border-${storeDetails.themeDarkColor} m-1 rounded-xl px-2 py-1`}
+                                  className={`cursor-pointer font-nunitoSans font-semibold text-[#232323] border bg-[#804C9E0D] border-${storeDetails.themeDarkColor} m-1 rounded-xl px-2 py-1`}
                                   onClick={() => handleSendMessage(question)}
                                   style={{
                                     backgroundColor:
@@ -613,10 +741,10 @@ const TanyaShoppingAssistantStream = () => {
                   </div>
 
                   {/* Input Field - Always at Bottom */}
-                  <div className="sticky bottom-0 w-[96%] drop-shadow-xl flex items-center rounded-full bg-white border border-gray-300 m-[15px]">
+                  {/* <div className="sticky bottom-0 w-[96%] drop-shadow-xl flex items-center rounded-xl bg-[#FFFFFF] border border-gray-300 m-[15px]">
                     <input
-                      placeholder="Ask me anything"
-                      className="w-full rounded-full p-4 outline-none border-none focus:ring-0 focus:border-transparent"
+                      placeholder="How can I help you..."
+                      className="w-full bg-[#FFFFFF] rounded-xl p-4 outline-none border-none focus:ring-0 focus:border-transparent"
                       value={inputText}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !isLoading) {
@@ -649,6 +777,120 @@ const TanyaShoppingAssistantStream = () => {
                         />
                       )}
                     </button>
+                  </div> */}
+
+                  {/* Sticky Bottom Input Bar */}
+                  <div className="flex flex-col gap-2 sticky bottom-0 left-0 right-0 bg-[#E3DEEF] z-50 px-4 py-2">
+                    {/* New Chat Text */}
+                    <div className="flex justify-end items-center">
+                      <p
+                        className="text-sm font-nunitoSans font-bold text-[#FFFFFF] p-1.5 pl-3 pr-3 border border-[#C9C2DE] rounded-l-2xl rounded-tr-2xl max-w-[75%]"
+                        style={{
+                          background:
+                            "linear-gradient(265.62deg, #6851C6 5.24%, #8668FF 98.49%)",
+                        }}
+                      >
+                        New chat
+                      </p>
+                    </div>
+
+                    {/* Gradient Border Wrapper */}
+                    <div
+                      className="p-[1px] rounded-xl"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, #B09FFF 0%, #8D79F6 100%)",
+                      }}
+                    >
+                      {/* Input + Mic + Submit */}
+                      <div className="flex items-center bg-[#FFFFFF] flex-1 rounded-xl px-2 py-1">
+                        <input
+                          className="flex-1 bg-[#FFFFFF] text-[#232323] outline-none border-none px-2 py-2 text-sm"
+                          placeholder="How can I help you..."
+                          value={inputText}
+                          onChange={(e) => setInputText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !isLoading)
+                              handleSendMessage();
+                          }}
+                        />
+                        {/* Mic Icon */}
+                        <button
+                          type="button"
+                          className="p-2 text-[#959595] hover:text-[#6952C7]"
+                        >
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <g clip-path="url(#clip0_501_6086)">
+                              <path
+                                d="M7.5 4.16663C7.5 3.50358 7.76339 2.8677 8.23223 2.39886C8.70107 1.93002 9.33696 1.66663 10 1.66663C10.663 1.66663 11.2989 1.93002 11.7678 2.39886C12.2366 2.8677 12.5 3.50358 12.5 4.16663V8.33329C12.5 8.99633 12.2366 9.63222 11.7678 10.1011C11.2989 10.5699 10.663 10.8333 10 10.8333C9.33696 10.8333 8.70107 10.5699 8.23223 10.1011C7.76339 9.63222 7.5 8.99633 7.5 8.33329V4.16663Z"
+                                stroke="#959595"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                              <path
+                                d="M4.1665 8.33337C4.1665 9.88047 4.78109 11.3642 5.87505 12.4582C6.96901 13.5521 8.45274 14.1667 9.99984 14.1667C11.5469 14.1667 13.0307 13.5521 14.1246 12.4582C15.2186 11.3642 15.8332 9.88047 15.8332 8.33337"
+                                stroke="#959595"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                              <path
+                                d="M6.6665 17.5H13.3332"
+                                stroke="#959595"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                              <path
+                                d="M10 14.1666V17.5"
+                                stroke="#959595"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </g>
+                            <defs>
+                              <clipPath id="clip0_501_6086">
+                                <rect width="20" height="20" fill="white" />
+                              </clipPath>
+                            </defs>
+                          </svg>
+                        </button>
+                        {/* Submit Button */}
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="p-3"
+                          onClick={() => handleSendMessage()}
+                        >
+                          {isLoading ? (
+                            <div
+                              className="p-3 animate-spin rounded-full h-3 w-3 border-b-2"
+                              style={{
+                                borderBottom: "2px solid",
+                                color: storeDetails.tanyaThemeColor,
+                              }}
+                            />
+                          ) : (
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.6357 13.6701L18.3521 8.5208C19.8516 4.02242 20.6013 1.77322 19.414 0.585948C18.2268 -0.601312 15.9776 0.148418 11.4792 1.64788L6.32987 3.36432C2.69923 4.57453 0.883923 5.17964 0.368062 6.06698C-0.122688 6.91112 -0.122688 7.95369 0.368062 8.7978C0.883923 9.6852 2.69923 10.2903 6.32987 11.5005C6.77981 11.6505 7.28601 11.5434 7.62294 11.2096L13.1286 5.75495C13.4383 5.44808 13.9382 5.45041 14.245 5.76015C14.5519 6.06989 14.5496 6.56975 14.2398 6.87662L8.8231 12.2432C8.4518 12.6111 8.3342 13.1742 8.4995 13.6701C9.7097 17.3007 10.3148 19.1161 11.2022 19.6319C12.0463 20.1227 13.0889 20.1227 13.933 19.6319C14.8204 19.1161 15.4255 17.3008 16.6357 13.6701Z"
+                                fill="#6952C7"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

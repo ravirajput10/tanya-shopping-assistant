@@ -33,8 +33,8 @@ function useResponsiveProductsPerPage() {
 
 const ProductCarousel = ({
   product,
-  storeDetails,
-}: {
+}: // storeDetails,
+{
   product: SearchProduct[];
   storeDetails: any;
 }) => {
@@ -65,32 +65,32 @@ const ProductCarousel = ({
   };
 
   return (
-    <div className="mb-4 overflow-x-hidden">
-      <div className="flex items-center justify-center mt-4 gap-4 relative">
+    <div className="mt-2 overflow-x-hidden">
+      <div className="flex items-center justify-center gap-4 relative">
         {product?.length > productsPerPage && (
           <button
             onClick={prevProducts}
-            className="absolute left-0 z-10 text-white p-2 rounded flex items-center h-fit"
-            style={{ color: storeDetails.tanyaThemeColor }}
+            className="absolute left-0 text-[#000000] bg-[#ffffff] rounded-full p-2 flex items-center h-fit"
+            // style={{ color: storeDetails.tanyaThemeColor }}
           >
             <Icon icon="mdi:chevron-left" width="25" />
           </button>
         )}
 
-        <div className="flex gap-4 justify-center flex-1 overflow-hidden px-8">
+        <div className="flex gap-5 justify-center flex-1 overflow-hidden">
           {product
             .slice(startIndex, startIndex + productsPerPage)
             .map((prod) => (
               <div
                 key={prod.product_id}
-                className="flex-shrink-0 flex flex-col w-[150px] h-[200px] items-center justify-between cursor-pointer shadow-lg bg-white rounded-[8px]"
+                className="flex-shrink-0 flex flex-col w-[150px] h-[200px] p-2 items-center justify-between cursor-pointer bg-[#FFFFFF] rounded-[10px] shadow-[0px_2px_2px_0px_#9292BC40]"
                 onClick={() => {
                   // navigate(`/product/${prod.id}?category=${prod.category}`);
                   getProduct(prod.product_id || "");
                 }}
               >
                 {/* Image */}
-                <div className="w-full flex items-center justify-center p-4 bg-white">
+                <div className="w-full p-2 flex items-center justify-center bg-white">
                   <img
                     src={
                       imageUrlArray(prod)[0]?.link ||
@@ -98,25 +98,17 @@ const ProductCarousel = ({
                       "https://via.placeholder.com/120"
                     }
                     alt={prod?.title ? prod.title : "Product"}
-                    className="w-20 h-20 rounded-[3px] transition-transform duration-300 hover:scale-125 object-cover"
+                    className="w-28 h-28 rounded-[10px] transition-transform duration-300 hover:scale-125 object-cover"
                   />
                 </div>
 
                 {/* Price & Name */}
                 <div
-                  className="text-white w-full rounded-[8px] p-2 text-[12px] text-center h-[60px]"
-                  style={{ background: storeDetails.tanyaThemeColor }}
+                  className="text-white w-full p-2 text-[12px] text-center h-[60px]"
+                  // style={{ background: storeDetails.tanyaThemeColor }}
                 >
-                  <div className="text-[14px] mb-1">
-                    {currencyFormatter(
-                      prod?.price
-                        ? Number(prod?.price)
-                        : priceFormatter(prod).centAmount || 0,
-                      priceFormatter(prod)?.currencyCode
-                    )}
-                  </div>
                   <div className="relative inline-block group">
-                    <div className="w-full line-clamp-1 overflow-hidden text-ellipsis">
+                    <div className="w-full line-clamp-1 overflow-hidden text-ellipsis text-[#000000] font-medium font-nunitoSans">
                       {prod?.title
                         ? prod.title
                         : prod?.product_name
@@ -148,6 +140,19 @@ const ProductCarousel = ({
                           ) || "Product"}
                     </div>
                   </div>
+                  <div className=" flex text-center items-center gap-2 text-[14px] text-[#14121F] font-bold font-nunitoSans text-base mb-1">
+                    <p>
+                      {currencyFormatter(
+                        prod?.price
+                          ? Number(prod?.price)
+                          : priceFormatter(prod).centAmount || 0,
+                        priceFormatter(prod)?.currencyCode
+                      )}
+                    </p>
+                    <p className="text-[#14121F] font-normal line-through text-sm font-nunitoSans">
+                      ${Number(prod?.price ?? 0) + 5}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -156,8 +161,8 @@ const ProductCarousel = ({
         {product?.length > productsPerPage && (
           <button
             onClick={nextProducts}
-            className="absolute right-0 z-10 text-white p-2 rounded flex items-center h-fit"
-            style={{ color: storeDetails.tanyaThemeColor }}
+            className="absolute right-0 text-[#000000] bg-[#ffffff] rounded-full p-2  flex items-center h-fit"
+            // style={{ color: storeDetails.tanyaThemeColor }}
           >
             <Icon icon="mdi:chevron-right" width="25" />
           </button>

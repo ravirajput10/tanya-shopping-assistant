@@ -32,7 +32,7 @@ const getSFCCProductById = async (req, res, next) => {
       return res.status(400).json({ error: "Product ID is required" });
     }
 
-    const baseUrl = `https://zzfw-001.dx.commercecloud.salesforce.com/s/Sites-SiteGenesis-Site/dw/shop/v24_1/products/${id}`;
+    const baseUrl = `https://zzfw-002.dx.commercecloud.salesforce.com/s/Sites-SiteGenesis-Site/dw/shop/v24_1/products/${id}`;
 
     // Build params dynamically with defaults
     const params = new URLSearchParams({

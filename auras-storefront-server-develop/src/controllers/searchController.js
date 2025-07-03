@@ -54,7 +54,7 @@ const searchSFCC = async (req, res) => {
 
   // Build the URL with the query parameter
   const baseUrl =
-    "https://zzfw-001.dx.commercecloud.salesforce.com/s/Sites-SiteGenesis-Site/dw/shop/v24_1/product_search";
+    "https://zzfw-002.dx.commercecloud.salesforce.com/s/Sites-SiteGenesis-Site/dw/shop/v24_1/product_search";
 
   const params = new URLSearchParams({
     q: query,
