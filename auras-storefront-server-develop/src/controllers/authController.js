@@ -38,7 +38,7 @@ const getAccessToken = async () => {
 };
 
 const fetchTokenSFCC = async (req = null, res = null) => {
-  console.log("came here");
+  // console.log("came here");
   try {
     // Use environment variable if no request object
     const client_id = req?.query?.client_id || process.env.SFCC_CLIENT_ID;
@@ -96,4 +96,111 @@ const fetchTokenSFCC = async (req = null, res = null) => {
   }
 };
 
-module.exports = { fetchToken, fetchTokenSFCC };
+const fetchTokenBmGrant = async (req = null, res = null) => {
+  // console.log("came here");
+  try {
+    const client_id = req?.query?.client_id || process.env.SFCC_CLIENT_ID;
+
+    if (!process.env.SFCC_CLIENT_ID) {
+      if (res) {
+        return res
+          .status(400)
+          .json({ error: "SFCC_CLIENT_ID is not configured" });
+      }
+      throw new Error("SFCC_CLIENT_ID is not configured");
+    }
+
+    // Prepare form-urlencoded body
+    const formBody = new URLSearchParams({
+      grant_type:
+        "urn:demandware:params:oauth:grant-type:client-id:dwsid:dwsecuretoken",
+    });
+
+    const url = `https://zzfw-002.dx.commercecloud.salesforce.com/dw/oauth2/access_token?client_id=${client_id}`;
+
+    const response = await axios.post(url, formBody, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        // Authorization: req.header("Authorization"),
+        Authorization:
+          "Basic c3Jpa2FudGgua3VtYmFnYWxsYUBhc3BpcmVzeXMuY29tOkZpdG5lc3NAMTIzNDUxMjM0NTpTaGluZUAxMjM0NTEyMzQ1",
+      },
+    });
+
+    // console.log("fetchTokenBmGrant resoponse", response.data);
+
+    return res.status(200).json(response.data); // <-- This sends the response to Postman
+  } catch (error) {
+    console.error("Token Request Error:", error);
+    return res.status(500).json({
+      error: "Failed to fetch SFCC token",
+      details: error.response?.data || error.message,
+    });
+  }
+};
+
+const fetchExistingRegisterCustomerToken = async (req = null, res = null) => {
+  console.log("came here");
+  try {
+    const client_id = req?.query?.client_id || process.env.SFCC_CLIENT_ID;
+    const { customerId } = req.params; // Get customerId from route params
+
+    // if (!process.env.SFCC_CLIENT_ID) {
+    //   if (res) {
+    //     return res
+    //       .status(400)
+    //       .json({ error: "SFCC_CLIENT_ID is not configured" });
+    //   }
+    //   throw new Error("SFCC_CLIENT_ID is not configured");
+    // }
+
+    const authToken = req.header("Authorization");
+    // console.log("authToken createBasket", authToken);
+    if (!authToken) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+
+    const url = `${process.env.SFCC_BASE_URL}/customers/${customerId}/auth?client_id=${client_id}`;
+
+    const response = await axios.post(
+      url,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken,
+        },
+      }
+    );
+
+    // Get the authorization header from SFCC response
+    const authHeader = response.headers["authorization"];
+    const responseData = {
+      ...response.data,
+      customer_token: authHeader,
+    };
+
+    // If called from API route, send response with headers
+    if (res) {
+      res.setHeader("Authorization", authHeader);
+      return res.json(responseData);
+    }
+
+    // console.log("fetchExistingRegisterCustomerToken resoponse", response.data);
+
+    return res.status(200).json(response.data); // <-- This sends the response to Postman
+  } catch (error) {
+    console.error("Token Request Error:", error);
+    return res.status(500).json({
+      error: "Failed to fetch SFCC token",
+      details: error.response?.data || error.message,
+    });
+  }
+};
+
+module.exports = {
+  fetchToken,
+  fetchTokenSFCC,
+  fetchTokenBmGrant,
+  fetchExistingRegisterCustomerToken,
+};

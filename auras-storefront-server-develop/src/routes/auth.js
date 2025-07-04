@@ -1,9 +1,11 @@
 const express = require("express");
-const { fetchToken, fetchTokenSFCC } = require("../controllers/authController.js"); // Note: .js extension is required
+const { fetchToken, fetchTokenSFCC, fetchTokenBmGrant, fetchExistingRegisterCustomerToken } = require("../controllers/authController.js"); // Note: .js extension is required
 
 const router = express.Router();
 
 router.get("/auth/token", fetchToken);
 router.post("/auth/token-sfcc", fetchTokenSFCC);
+router.post("/auth/token-bm-grant", fetchTokenBmGrant);
+router.post("/auth/token-existing-register-customer/:customerId", fetchExistingRegisterCustomerToken);
 
 module.exports = router;

@@ -28,7 +28,7 @@ interface Product {
   quantity: number;
 }
 
-export const createBasket = async (token: string) => {
+export const createBasket = async (customer_token: string) => {
   const { serverUrl } = apiConfig();
   const URL = `${serverUrl}`;
   try {
@@ -38,7 +38,7 @@ export const createBasket = async (token: string) => {
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,
+          Authorization: customer_token,
         },
       }
     );
@@ -60,7 +60,7 @@ export const createBasket = async (token: string) => {
 export const addProductToBasket = async (
   basketId: string,
   products: Product[],
-  token: string
+  customer_token: string
 ) => {
   const { serverUrl } = apiConfig();
   const URL = `${serverUrl}`;
@@ -71,7 +71,7 @@ export const addProductToBasket = async (
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: token,
+          Authorization: customer_token,
         },
       }
     );
