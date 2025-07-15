@@ -146,6 +146,7 @@ const ProductDisplayCard = () => {
             pauseOnHover: true,
             draggable: true,
           });
+          window.location.reload(); // Refresh page to update cart
         }
       } else {
         // Use existing token and basket ID
@@ -173,6 +174,7 @@ const ProductDisplayCard = () => {
             pauseOnHover: true,
             draggable: true,
           });
+          window.location.reload(); // Refresh page to update cart
         }
       }
     } catch (error: any) {
@@ -203,6 +205,15 @@ const ProductDisplayCard = () => {
         });
       }
     }
+  };
+
+  // Function to generate and redirect to the product detail page
+  const viewMore = () => {
+    if (!product) return;
+    const productName = (product.name || "").replace(/\s+/g, "").toLowerCase();
+    const productId = product.variants?.[0]?.product_id || product.id;
+    const url = `https://zzfw-002.dx.commercecloud.salesforce.com/s/SiteGenesis/${productName}/${productId}.html?lang=en_US`; //sfcc product details url
+    window.location.href = url; //redirect to sfcc product details url
   };
 
   return (
@@ -438,6 +449,7 @@ const ProductDisplayCard = () => {
           <button
             className="rounded-[5px] shadow-sm text-[#FBFBFC] bg-[#6851C6] p-2 w-full text-center cursor-pointer mb-16"
             style={{ backgroundColor: storeDetails.tanyaThemeColor }}
+            onClick={viewMore}
           >
             View more
           </button>
