@@ -1,10 +1,15 @@
 import axios from "axios";
 
+// fetch bm mai email:password:client pass lagega aur ye user to user differ karega,  email:password:client  ko base64 encrypt kar k auth mai pass karna padega
+
+// email:password:client need to be pass in encrypt form in the auth of fetchTokenBmGrant
+
+// email:password:client is different from user to user
 export const fetchTokenBmGrant = async () => {
   const URL = `${import.meta.env.VITE_SERVER_BASE_URL}`;
   try {
     const response = await axios.post(`${URL}api/auth/token-bm-grant`);
-    console.log("fetchTokenBmGrant res fe", response.data)
+    console.log("fetchTokenBmGrant res fe", response.data);
     if (response.status === 200 && response.data.access_token) {
       return response.data.access_token;
     } else {
