@@ -15,7 +15,10 @@ import {
 import { toast } from "react-toastify";
 import { TOKEN_EXPIRY_KEY } from "../../config/constant";
 import { fetchTokenBmGrant } from "../utils/fetchTokenBmGrant";
-import { fetchExistingRegisterCustomerToken } from "../utils/fetchExistingRegisterCustomerToken";
+import {
+  fetchExistingRegisterCustomerToken,
+  fetchExistingGuestCustomerToken,
+} from "../utils/fetchExistingRegisterCustomerToken";
 
 const ANIMATION_DURATION = 300; // ms
 
@@ -82,7 +85,10 @@ const ProductDisplayCard = () => {
       ];
 
       // for getting customer id
-      // const customer = window?.SFCC_CONTEXT?.customer
+      // const customer = window?.SFCC_CONTEXT?.customer;
+      // const isGuest = customer?.isGuest ?? true;
+      // const customerId = customer?.customerId;
+      const isGuest = true;
       const customerId = "ab2ltoZBQDiUfzxvWZNhAZApnU";
 
       let customer_token = getStoredToken();
@@ -98,10 +104,24 @@ const ProductDisplayCard = () => {
         // Get token once and use it for both calls (createBasket, addProductToBasket)
         // token = await fetchTokenSFCC();
         const access_token = await fetchTokenBmGrant();
-        const { customer_token } = await fetchExistingRegisterCustomerToken({
-          access_token,
-          customerId,
-        });
+
+        let customer_token;
+        if (isGuest) {
+          ({ customer_token } = await fetchExistingRegisterCustomerToken({
+            access_token,
+            customerId,
+          }));
+        } else {
+          ({ customer_token } = await fetchExistingGuestCustomerToken({
+            access_token,
+            customerId,
+          }));
+        }
+
+        // const { customer_token } = await fetchExistingRegisterCustomerToken({
+        //   access_token,
+        //   customerId,
+        // });
 
         // console.log("customer_token", customer_token)
 
@@ -109,14 +129,12 @@ const ProductDisplayCard = () => {
           console.error("Failed to get customer_token");
           return;
         }
-        // Store new token with expiry time (4 minutes from now)
-        const newExpiryTime = currentTime + 4 * 60 * 1000; // 4 minutes in milliseconds
+        // Store new customer_token with expiry time (5 minutes from now)
+        const newExpiryTime = currentTime + 5 * 60 * 1000; // 4 minutes in milliseconds
         setStoredToken(customer_token);
         localStorage.setItem(TOKEN_EXPIRY_KEY, newExpiryTime.toString());
 
-        //  const access_token = await fetchExistingRegisterCustomerToken({token, customerId})
-
-        // Create new basket with new token
+        // Create new basket with new customer_token token
         const basketResponse = await createBasket(customer_token);
         if (!basketResponse?.basket_id) {
           console.error("Failed to create basket");
@@ -149,7 +167,7 @@ const ProductDisplayCard = () => {
           window.location.reload(); // Refresh page to update cart
         }
       } else {
-        // Use existing token and basket ID
+        // Use existing customer_token and basket ID
         const basketId = getStoredBasketId();
         if (!basketId) {
           console.error("No basket ID found");
