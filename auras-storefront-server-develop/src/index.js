@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const cookieParser = require('cookie-parser');
 const authRoutes = require("./routes/auth.js");
 const tanyaShoppingAssistant = require("./routes/tanyaShoppingAssistant.js");
 const searchRoutes = require("./routes/search.js");
@@ -16,6 +17,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({ origin: "*" }));
 
 // Health check route
