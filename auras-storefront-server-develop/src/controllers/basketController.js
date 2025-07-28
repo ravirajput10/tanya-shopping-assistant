@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { fetchTokenBmGrant } = require("./authController");
 // const { fetchTokenSFCC } = require("./authController");
 
 const createBasket = async (req, res) => {
@@ -10,9 +11,9 @@ const createBasket = async (req, res) => {
     // }
 
     // Get authorization token from request header
-    console.log("req.header", req.header);
+    // console.log("req.header", req.header);
     const authToken = req.header("Authorization");
-    console.log("authToken createBasket", authToken);
+    // console.log("authToken createBasket", authToken);
     if (!authToken) {
       return res.status(401).json({ error: "Authorization token is required" });
     }
@@ -89,7 +90,39 @@ const addProductToBasket = async (req, res) => {
   }
 };
 
+const fetchBasket = async (req, res) => {
+  try {
+    const { basketId } = req.params; // Get basketId from route params
+
+    // Get authorization token from request header
+    const authToken = req.header("Authorization");
+    if (!authToken) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+
+    const baseUrl = `https://zzfw-002.dx.commercecloud.salesforce.com/s/Sites-SiteGenesis-Site/dw/shop/v23_2/baskets/${basketId}`;
+
+    const response = await axios.get(baseUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authToken, // Don't need to add 'Bearer' as it's already in the token
+        // Authorization: `Bearer ${access_token}`, // Don't need to add 'Bearer' as it's already in the token
+      },
+    });
+
+    // console.log("fetchBasket", response.data);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error("fetchBasketError", error.response?.data || error.message);
+    return res.status(404).json({
+      error: "Basket not found",
+      details: error.response?.data || error.message,
+    });
+  }
+};
+
 module.exports = {
   createBasket,
   addProductToBasket,
+  fetchBasket,
 };

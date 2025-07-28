@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"; // Add useMemo here when uncomment 
 import { useSelector, useDispatch } from "react-redux";
 import { Icon } from "@iconify/react";
 import { setProduct } from "../../store/reducers/productReducer";
-import { addProductToBasket, createBasket } from "../api/api";
+import { addProductToBasket, createBasket, fetchBasket } from "../api/api";
 // import { fetchTokenSFCC } from "../utils/fetchTokenSFCC";
 import {
   getStoredBasketId,
@@ -85,11 +85,14 @@ const ProductDisplayCard = () => {
       ];
 
       // for getting customer id
-      // const customer = window?.SFCC_CONTEXT?.customer;
-      // const isGuest = customer?.isGuest ?? true;
-      // const customerId = customer?.customerId;
-      const isGuest = true;
+      // const customerData = window?.SFCC_CONTEXT?.customer;
+      // if isGuest is true it is guest customer if false it is register customer
+      // const isGuest = customerData?.isGuest ?? true;
+      // const customerId = customerData?.customerId;
+      // const basketId = customerData?.basketId;
+      const isGuest = false;
       const customerId = "ab2ltoZBQDiUfzxvWZNhAZApnU";
+      let basketIdFromCustomer: string | null = null;
 
       let customer_token = getStoredToken();
       const tokenExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
@@ -107,34 +110,55 @@ const ProductDisplayCard = () => {
 
         let customer_token;
         if (isGuest) {
+          ({ customer_token } = await fetchExistingGuestCustomerToken());
+          // access_token
+          // customerId,
+        } else {
           ({ customer_token } = await fetchExistingRegisterCustomerToken({
             access_token,
             customerId,
           }));
-        } else {
-          ({ customer_token } = await fetchExistingGuestCustomerToken({
-            access_token,
-            customerId,
-          }));
         }
-
-        // const { customer_token } = await fetchExistingRegisterCustomerToken({
-        //   access_token,
-        //   customerId,
-        // });
-
-        // console.log("customer_token", customer_token)
 
         if (!customer_token) {
           console.error("Failed to get customer_token");
           return;
         }
         // Store new customer_token with expiry time (5 minutes from now)
-        const newExpiryTime = currentTime + 5 * 60 * 1000; // 4 minutes in milliseconds
+        const newExpiryTime = currentTime + 5 * 60 * 1000; // 5 minutes in milliseconds
         setStoredToken(customer_token);
         localStorage.setItem(TOKEN_EXPIRY_KEY, newExpiryTime.toString());
 
-        // Create new basket with new customer_token token
+        // 1. Try basketId from customerData
+        if (basketIdFromCustomer) {
+          const fetchBasketResponse = await fetchBasket({
+            basketId: basketIdFromCustomer,
+            customer_token,
+          });
+          if (fetchBasketResponse.status === 200 && fetchBasketResponse) {
+            // Use this basketId to add product
+            const response = await addProductToBasket(
+              basketIdFromCustomer,
+              productData,
+              customer_token
+            );
+            if (response?.product_items?.length > 0) {
+              // const addedProduct = response.product_items.at(-1);
+              toast.success(`Added to cart`, {
+                position: "bottom-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+              });
+              window.location.reload();
+            }
+            return; // Skip basket creation
+          }
+        }
+
+        // 2. If not valid, create new basket and store its ID in localStorage
         const basketResponse = await createBasket(customer_token);
         if (!basketResponse?.basket_id) {
           console.error("Failed to create basket");
@@ -150,12 +174,11 @@ const ProductDisplayCard = () => {
           productData,
           customer_token
         );
-
         if (response?.product_items?.length > 0) {
-          const addedProduct = response.product_items.at(-1);
+          // const addedProduct = response.product_items.at(-1);
           // const addedProduct = response.product_items[response.product_items.length - 1];
-          addedProduct.product_name;
-          addedProduct.product_id;
+          // addedProduct.product_name;
+          // addedProduct.product_id;
           toast.success(`Added to cart`, {
             position: "bottom-right",
             autoClose: 3000,
@@ -180,10 +203,10 @@ const ProductDisplayCard = () => {
           customer_token
         );
         if (response?.product_items?.length > 0) {
-          const addedProduct = response.product_items.at(-1);
+          // const addedProduct = response.product_items.at(-1);
           // const addedProduct = response.product_items[response.product_items.length - 1];
-          addedProduct.product_name;
-          addedProduct.product_id;
+          // addedProduct.product_name;
+          // addedProduct.product_id;
           toast.success(`Added to cart`, {
             position: "bottom-right",
             autoClose: 3000,

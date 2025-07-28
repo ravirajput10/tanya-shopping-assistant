@@ -92,3 +92,32 @@ export const addProductToBasket = async (
     return null;
   }
 };
+
+export const fetchBasket = async ({
+  basketId,
+  customer_token,
+}: {
+  basketId: string;
+  customer_token: string;
+}) => {
+  const { serverUrl } = apiConfig();
+  const URL = `${serverUrl}`;
+  try {
+    const response = await axios.get(
+      `${URL}api/basket/${basketId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: customer_token,
+        },
+      }
+    );
+    return { status: response.status, data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return { status: error.response?.status, data: null };
+    } else {
+      return { status: null, data: null };
+    }
+  }
+};

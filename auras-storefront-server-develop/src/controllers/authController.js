@@ -97,7 +97,6 @@ const fetchTokenSFCC = async (req = null, res = null) => {
 };
 
 const fetchTokenBmGrant = async (req = null, res = null) => {
-  // console.log("came here");
   try {
     const client_id = req?.query?.client_id || process.env.SFCC_CLIENT_ID;
 
@@ -121,15 +120,19 @@ const fetchTokenBmGrant = async (req = null, res = null) => {
     const response = await axios.post(url, formBody, {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        // Authorization: req.header("Authorization"),
+        // Authorization: req.header("Authorization"),  // uncomment if you are testing from postman
         Authorization:
-          "Basic c3Jpa2FudGgua3VtYmFnYWxsYUBhc3BpcmVzeXMuY29tOkZpdG5lc3NAMTIzNDUxMjM0NTpTaGluZUAxMjM0NTEyMzQ1",
+          "Basic c3Jpa2FudGgua3VtYmFnYWxsYUBhc3BpcmVzeXMuY29tOkludGVsQDEyMzQ1MTIzNDU6U2hpbmVAMTIzNDUxMjM0NQ==",
       },
     });
 
-    // console.log("fetchTokenBmGrant resoponse", response.data);
 
-    return res.status(200).json(response.data); // <-- This sends the response to Postman
+    // If called from an API route, send response to Postman
+    if (res) {
+      return res.status(200).json(response.data);
+    }
+    // If called internally, just return the token object
+    return response.data;
   } catch (error) {
     console.error("Token Request Error:", error);
     return res.status(500).json({
@@ -155,7 +158,6 @@ const fetchExistingRegisterCustomerToken = async (req = null, res = null) => {
     // }
 
     const authToken = req.header("Authorization");
-    // console.log("authToken createBasket", authToken);
     if (!authToken) {
       return res.status(401).json({ error: "Authorization token is required" });
     }
@@ -192,7 +194,78 @@ const fetchExistingRegisterCustomerToken = async (req = null, res = null) => {
   } catch (error) {
     console.error("Token Request Error:", error);
     return res.status(500).json({
-      error: "Failed to fetch SFCC token",
+      error: "Failed to fetch Register Customer Token",
+      details: error.response?.data || error.message,
+    });
+  }
+};
+
+const fetchExistingGuestCustomerToken = async (req = null, res = null) => {
+  console.log("came here");
+  try {
+    const client_id = req?.query?.client_id || process.env.SFCC_CLIENT_ID;
+    // const { customerId } = req.params; // Get customerId from route params
+
+    // if (!process.env.SFCC_CLIENT_ID) {
+    //   if (res) {
+    //     return res
+    //       .status(400)
+    //       .json({ error: "SFCC_CLIENT_ID is not configured" });
+    //   }
+    //   throw new Error("SFCC_CLIENT_ID is not configured");
+    // }
+
+    // Get the dwsid cookie from the incoming request
+    const dwsid = req.cookies?.dwsid; // Requires cookie-parser middleware
+    // Build the Cookie header if dwsid exists
+    const cookieHeader = dwsid ? `dwsid=${dwsid}` : "";
+
+    const authToken = req.header("Authorization");
+    // console.log("authToken createBasket", authToken);
+    if (!authToken) {
+      return res.status(401).json({ error: "Authorization token is required" });
+    }
+
+    const url = `${process.env.SFCC_BASE_URL}/customers/auth?client_id=${client_id}`;
+
+    const response = await axios.post(
+      url,
+      {
+        type: "session",
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization: authToken,
+          Authorization:
+            "Basic c3Jpa2FudGgua3VtYmFnYWxsYUBhc3BpcmVzeXMuY29tOkludGVsQDEyMzQ1MTIzNDU6U2hpbmVAMTIzNDUxMjM0NQ==",
+          // Cookie:
+          //   "dwsid=YzB5bQgR3u6YCDsfXgCX2bog8j1KbLL0k-DWKRrluhL3AAG1qqymdEgBG-xuc77MWF0jN3Ct2uBIyFiE0qPBjw==",
+          Cookie: cookieHeader
+        },
+      }
+    );
+
+    // Get the authorization header from SFCC response
+    const authHeader = response.headers["authorization"];
+    const responseData = {
+      ...response.data,
+      customer_token: authHeader,
+    };
+
+    // If called from API route, send response with headers
+    if (res) {
+      res.setHeader("Authorization", authHeader);
+      return res.json(responseData);
+    }
+
+    // console.log("fetchExistingRegisterCustomerToken resoponse", response.data);
+
+    return res.status(200).json(response.data); // <-- This sends the response to Postman
+  } catch (error) {
+    console.error("Token Request Error:", error);
+    return res.status(500).json({
+      error: "Failed to fetch Guest Customer Token",
       details: error.response?.data || error.message,
     });
   }
@@ -203,4 +276,5 @@ module.exports = {
   fetchTokenSFCC,
   fetchTokenBmGrant,
   fetchExistingRegisterCustomerToken,
+  fetchExistingGuestCustomerToken,
 };

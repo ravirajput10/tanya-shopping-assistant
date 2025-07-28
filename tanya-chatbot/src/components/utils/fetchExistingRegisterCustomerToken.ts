@@ -37,21 +37,22 @@ export const fetchExistingRegisterCustomerToken = async ({
   }
 };
 
-// This function needs to be change WIP.
-// First create this fuction in the backend
-export const fetchExistingGuestCustomerToken = async ({
-  access_token,
-  customerId,
-}: Customer) => {
+//   {
+//   access_token,
+//   customerId,
+// }:
+// Customer
+
+export const fetchExistingGuestCustomerToken = async () => {
   const URL = `${import.meta.env.VITE_SERVER_BASE_URL}`;
   try {
     const response = await axios.post(
-      `${URL}api/auth/token-existing-guest-customer/${customerId}`,
+      `${URL}api/auth/token-existing-guest-customer`,
       {},
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${access_token}`,
+          // Authorization: `Bearer ${access_token}`,
         },
       }
     );
