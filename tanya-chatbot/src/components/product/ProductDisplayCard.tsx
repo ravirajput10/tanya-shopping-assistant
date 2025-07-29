@@ -18,7 +18,7 @@ import { fetchTokenBmGrant } from "../utils/fetchTokenBmGrant";
 import {
   fetchExistingRegisterCustomerToken,
   fetchExistingGuestCustomerToken,
-} from "../utils/fetchExistingRegisterCustomerToken";
+} from "../utils/fetchCustomerToken";
 
 const ANIMATION_DURATION = 300; // ms
 
